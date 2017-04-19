@@ -149,7 +149,7 @@ sg.mult.par<-function(g,...,lower,upper){ # initializing function; takes inputs 
   if (length(lower)!=length(upper)) stop("number of lower and upper bounds must match")
   # checks to make sure that the user inputs the same number of lower and upper bounds
   
-  clusterExport(cl, c("lower","upper"))
+  clusterExport(cl, c("lower","upper"), envir = environment())
   sequences <- list()
   sequences <- parLapply(cl=cl, 1:length(lower), function(x) seq(lower[x],upper[x]-1,by=1))
   gridss <- as.matrix(expand.grid(sequences))
@@ -166,7 +166,7 @@ sg.mult.par<-function(g,...,lower,upper){ # initializing function; takes inputs 
   # second argument indicates the dimensionality of the integration
   # problem; third argument indicates the accuracy level
   
-  clusterExport(cl, c("gridss", "sp.grid"))
+  clusterExport(cl, c("gridss", "sp.grid"), envir = environment())
   nodes <- parLapply(cl=cl, 1:nrow(gridss), function(x) gridss[x,]+sp.grid$nodes)
   nodes <- do.call(rbind, nodes)
   # initializes our nodes with the first row of gridss plus our nodes from
@@ -178,8 +178,8 @@ sg.mult.par<-function(g,...,lower,upper){ # initializing function; takes inputs 
   # rows in gridss
   
   g <- g
-  clusterExport(cl, c("g","nodes"))
-  gx.sp <- parApply(cl=cl, nodes, 1, g) # applies the function g to the nodes
+  clusterExport(cl, c("g","nodes"), envir = environment())
+  gx.sp <- parApply(cl=cl, X=nodes, MARGIN=1, FUN=g) # applies the function g to the nodes
   val.sp <- gx.sp %*%weights # multiplies gx.sp by the weights
   stopCluster(cl) # terminating the parallel cluster
   val.sp # returns val.sp
